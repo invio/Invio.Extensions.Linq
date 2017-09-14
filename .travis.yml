@@ -1,0 +1,17 @@
+language: csharp
+sudo: required
+dotnet: 1.0.4
+
+matrix:
+  include:
+    - os: linux # Ubuntu 14.04
+      dist: trusty
+
+branches:
+  only:
+    - master
+
+before_script:
+  - chmod a+x ./build.sh
+script:
+  - ./build.sh
