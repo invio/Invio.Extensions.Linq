@@ -27,7 +27,6 @@ namespace Invio.Extensions.Linq {
         }
 
         [Theory]
-        [InlineData(0)]
         [InlineData(-1)]
         [InlineData(Int32.MinValue)]
         public void GetPage_PageSizeOutOfRange(Int32 pageSize) {
@@ -49,6 +48,20 @@ namespace Invio.Extensions.Linq {
             var page = source.AsQueryable().GetPage(1, Int32.MaxValue);
             Assert.Equal(3, page.Total);
             Assert.Equal(source, page.Results);
+        }
+
+        [Theory]
+        [InlineData(0, 1)]
+        [InlineData(1, 1)]
+        [InlineData(10, 1)]
+        [InlineData(15, 200)] // page number should be ignored
+        public void ZeroPageSize_CountOnly(Int32 total, Int32 pageNumber) {
+            GetPageAndCheckQueryCounts(
+                total,
+                pageNumber,
+                pageSize: 0,
+                expectedQueries: 0,
+                expectedCounts: 1);
         }
 
         [Theory]
