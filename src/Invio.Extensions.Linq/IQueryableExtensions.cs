@@ -41,13 +41,21 @@ namespace Invio.Extensions.Linq {
                     pageNumber,
                     "pageNumber must be greater than or equal to 1.");
             }
-            if (pageSize < 1) {
+            if (pageSize < 0) {
                 throw new ArgumentOutOfRangeException(
                     nameof(pageSize),
                     pageSize,
                     "pageSize must be greater than or equal to 1.");
             }
-            if (pageNumber > Int32.MaxValue / pageSize) {
+
+            if (pageSize == 0) {
+                // Short circuit with a simple count when page size is 0
+                return new PaginatedResult<T>(
+                    ImmutableList<T>.Empty,
+                    offset: 0,
+                    total: source.Count()
+                );
+            } else if (pageNumber > Int32.MaxValue / pageSize) {
                 throw new ArgumentOutOfRangeException(
                     nameof(pageNumber),
                     pageNumber,
