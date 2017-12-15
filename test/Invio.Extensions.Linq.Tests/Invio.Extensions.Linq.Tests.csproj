@@ -1,23 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp1.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
     <DebugType>portable</DebugType>
     <AssemblyName>Invio.Extensions.Linq.Tests</AssemblyName>
     <PackageId>Invio.Extensions.Linq.Tests</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-    <PackageTargetFallback>
+    <AssetTargetFallback>
       $(PackageTargetFallback);dotnet5.4;portable-net451+win8
-    </PackageTargetFallback>
-    <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>
+    </AssetTargetFallback>
+    <RuntimeFrameworkVersion>2.0.3</RuntimeFrameworkVersion>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Invio.Extensions.Linq/Invio.Extensions.Linq.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
-    <PackageReference Include="Invio.Xunit" Version="0.1.3" />
-    <PackageReference Include="xunit" Version="2.2.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+    <PackageReference Include="Invio.Xunit" Version="0.1.4" />
+    <PackageReference Include="xunit" Version="2.3.1" />
   </ItemGroup>
 </Project>
