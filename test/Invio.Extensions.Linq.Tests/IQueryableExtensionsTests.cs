@@ -10,6 +10,7 @@ using Xunit;
 
 namespace Invio.Extensions.Linq {
     public class IQueryableExtensionsTests {
+        [Fact]
         public void GetPage_NullSource() {
             Assert.Throws<NullReferenceException>(
                 () => ((IQueryable<Object>)null).GetPage(1, 1)
