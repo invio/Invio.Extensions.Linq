@@ -5,9 +5,6 @@
     <AssemblyName>Invio.Extensions.Linq.Tests</AssemblyName>
     <PackageId>Invio.Extensions.Linq.Tests</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-    <AssetTargetFallback>
-      $(PackageTargetFallback);dotnet5.4;portable-net451+win8
-    </AssetTargetFallback>
     <RuntimeFrameworkVersion>2.0.3</RuntimeFrameworkVersion>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
