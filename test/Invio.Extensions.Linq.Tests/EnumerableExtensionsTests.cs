@@ -186,6 +186,66 @@ namespace Invio.Extensions.Linq {
             }
         }
 
+        [Fact]
+        public void Zip_FirstSequenceNull() {
+
+            // Arrange
+
+            IEnumerable<object> first = null;
+            IEnumerable<object> second = new List<object> { new object() };
+
+            // Act
+
+            var exception = Record.Exception(
+                () => first.Zip(second).ToList()
+            );
+
+            // Assert
+
+            Assert.IsType<ArgumentNullException>(exception);
+        }
+
+        [Fact]
+        public void Zip_SecondSequenceNull() {
+
+            // Arrange
+
+            IEnumerable<object> first = new List<object> { new object() };
+            IEnumerable<object> second = null;
+
+            // Act
+
+            var exception = Record.Exception(
+                () => first.Zip(second).ToList()
+            );
+
+            // Assert
+
+            Assert.IsType<ArgumentNullException>(exception);
+        }
+
+        [Fact]
+        public void Zip_CombinesVaryingLengths() {
+
+            // Arrange
+
+            IEnumerable<int> first = new List<int> { 1, 2, 3 };
+            IEnumerable<string> second = new List<string> { "4", "5", "6", "7" };
+
+            // Act
+
+            var zipped = first.Zip(second).ToList();
+
+            Assert.Equal(
+                new List<Tuple<int, string>> {
+                    Tuple.Create(1, "4"),
+                    Tuple.Create(2, "5"),
+                    Tuple.Create(3, "6")
+                },
+                zipped
+            );
+        }
+
     }
 
 }
