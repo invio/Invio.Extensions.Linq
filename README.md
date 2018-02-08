@@ -18,7 +18,7 @@ PM> Install-Package Invio.Extensions.Linq
 
 ### Cycling Enumerables
 
-There is an extension method, on both `IEnumerable` and `IEnumerable<T>` that allow a caller to cycle over the original enumerable ad infinitum. Named **`Cycle()`**, this method makes it so that, upon reaching the end of the parent `IEnumerable<T>`, it will always start enumerating again from the beginning.
+There is an extension method, on both `IEnumerable` and `IEnumerable<T>`, that allow a caller to cycle over the original enumerable ad infinitum. Named **`Cycle()`**, this method makes it so that, upon reaching the end of the parent `IEnumerable<T>`, it will always start enumerating again from the beginning.
 
 This can be especially useful in [generative or "model-based" testing scenarios](https://en.wikipedia.org/wiki/Model-based_testing) when you want to rotate through a collection of valid data as a parameter for a different collection of test cases whose length is unknown.
 
@@ -34,3 +34,35 @@ public IEnumerable<TestCase> ToTestCases(IEnumerable<Guid> ids) {
 ```
 
 In the above example, it does not matter how large the `IEnumerable<Guid>` is, it will always get a valid `Profile` from the list of `ValidProfiles`.
+
+### Enumerable Subsequences
+
+There is an extension method on `IEnumerable<T>` that allows allows a caller to get all
+potential subsequences of an initial sequence of elements. Named **`Subsequences()`**,
+this method will include all combinations of elements in no particular order, including
+the identity sequence and the empty sequence.
+
+If there are duplicate elements, that will result in duplicate subsequences.
+
+This can be useful when attempting to enumerate all potential subsets of a group of values,
+like so:
+
+```csharp
+public static void EnumerateSubsets() {
+    var values = new List<string> { "foo", "bar", "biz" };
+
+    foreach (var subsequence in values.Subsequences()) {
+        Console.WriteLine("[" + String.Join(", ") + "]");
+    }
+}
+
+// Output
+[]
+[foo]
+[bar]
+[biz]
+[foo, bar]
+[foo, biz]
+[bar, biz]
+[foo, bar, biz]
+```

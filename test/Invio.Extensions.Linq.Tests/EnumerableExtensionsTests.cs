@@ -246,6 +246,145 @@ namespace Invio.Extensions.Linq {
             );
         }
 
+        [Fact]
+        public void Subsequences_Null() {
+
+            // Arrange
+
+            IEnumerable<object> source = null;
+
+            // Act
+
+            var exception = Record.Exception(
+                () => source.Subsequences().ToList()
+            );
+
+            // Assert
+
+            Assert.IsType<ArgumentNullException>(exception);
+        }
+
+        public static IEnumerable<object[]> Subsequences_ValidCases_MemberData {
+            get {
+                yield return new object[] {
+                    new object[0],
+                    new object[][] {
+                        new object[0]
+                    }
+                };
+
+                yield return new object[] {
+                    new string[] { "foo" },
+                    new string[][] {
+                        new string[0],
+                        new string[] { "foo" },
+                    }
+                };
+
+                yield return new object[] {
+                    new DateTime?[] { DateTime.MinValue, null },
+                    new DateTime?[][] {
+                        new DateTime?[0],
+                        new DateTime?[] { DateTime.MinValue },
+                        new DateTime?[] { null },
+                        new DateTime?[] { DateTime.MinValue, null }
+                    }
+                };
+
+                yield return new object[] {
+                    new int[] { -2, 0, 5 },
+                    new int[][] {
+                        new int[0],
+                        new int[] { -2 },
+                        new int[] { 0 },
+                        new int[] { 5 },
+                        new int[] { -2, 0 },
+                        new int[] { -2, 5 },
+                        new int[] { 0, 5 },
+                        new int[] { -2, 0, 5 },
+                    }
+                };
+
+                yield return new object[] {
+                    new string[] { "dupe", "dee", "dupe" },
+                    new string[][] {
+                        new string[0],
+                        new string[] { "dupe" },
+                        new string[] { "dee" },
+                        new string[] { "dupe" },
+                        new string[] { "dupe", "dee" },
+                        new string[] { "dee", "dupe" },
+                        new string[] { "dupe", "dupe" },
+                        new string[] { "dupe", "dee", "dupe" }
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Subsequences_ValidCases_MemberData))]
+        public void Subsequences_ValidCases<T>(
+            IEnumerable<T> source,
+            IEnumerable<IEnumerable<T>> expected) {
+
+            // Arrange
+
+            var comparer = new SequenceEqualityComparer<T>();
+            var counts = new Dictionary<IEnumerable<T>, int>(comparer);
+
+            foreach (var sequence in expected) {
+                if (counts.TryGetValue(sequence, out int count)) {
+                    counts[sequence] = count++;
+                } else {
+                    counts[sequence] = 1;
+                }
+            }
+
+            // Act
+
+            var actual = source.Subsequences().ToList();
+
+            // Assert
+
+            Assert.NotNull(actual);
+
+            foreach (var sequence in actual) {
+                Assert.Contains(sequence, expected, comparer);
+
+                Assert.True(
+                    counts.TryGetValue(sequence, out int count),
+                    "Each expected subsequence should only be returned once, " +
+                    "but the following sequence was returned twice: " +
+                    Environment.NewLine +
+                    "[ " + String.Join(", ", sequence.Select(elem => elem?.ToString())) + " ]"
+                );
+
+                counts[sequence] = count--;
+            }
+
+            Assert.Equal(expected.Count(), actual.Count());
+        }
+
+        private class SequenceEqualityComparer<T> : IEqualityComparer<IEnumerable<T>> {
+
+            public int GetHashCode(IEnumerable<T> sequence) {
+                return sequence.Count();
+            }
+
+            public bool Equals(IEnumerable<T> left, IEnumerable<T> right) {
+                if (left.Count() != right.Count()) {
+                    return false;
+                }
+
+                var leftOrdered = left.OrderBy(element => element);
+                var rightOrdered = right.OrderBy(element => element);
+
+                return leftOrdered.SequenceEqual(rightOrdered);
+            }
+
+        }
+
+
     }
 
 }
