@@ -179,16 +179,22 @@ namespace Invio.Extensions.Linq {
                 throw new ArgumentNullException(nameof(source));
             }
 
-            if (!source.Any()) {
-                yield return Enumerable.Empty<T>();
-                yield break;
-            }
+            var empty = Enumerable.Empty<T>();
 
-            var head = source.Take(1);
+            yield return empty;
+            var subsequences = new List<IEnumerable<T>> { empty };
 
-            foreach (var tail in source.Skip(1).Subsequences()) {
-                yield return head.Concat(tail);
-                yield return tail;
+            foreach (var element in source) {
+                var additionalSubsequences = new List<IEnumerable<T>>(subsequences.Count);
+
+                foreach (var subsequence in subsequences) {
+                    var additionalSubsequence = subsequence.Concat(new T[] { element });
+
+                    yield return additionalSubsequence;
+                    additionalSubsequences.Add(additionalSubsequence);
+                }
+
+                subsequences.AddRange(additionalSubsequences);
             }
         }
 

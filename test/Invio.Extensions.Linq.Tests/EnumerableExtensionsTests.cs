@@ -365,6 +365,25 @@ namespace Invio.Extensions.Linq {
             Assert.Equal(expected.Count(), actual.Count());
         }
 
+        [Theory]
+        [InlineData(1)]
+        [InlineData(10000)]
+        [InlineData(100000)]
+        public void Subsequences_UnusuallyLargeCase(int numberToTake) {
+
+            // Arrange
+
+            var source = Enumerable.Range(0, Int32.MaxValue);
+
+            // Act
+
+            var subsequences = source.Subsequences().Take(numberToTake).ToList();
+
+            // Assert
+
+            Assert.Equal(numberToTake, subsequences.Count());
+        }
+
         private class SequenceEqualityComparer<T> : IEqualityComparer<IEnumerable<T>> {
 
             public int GetHashCode(IEnumerable<T> sequence) {
