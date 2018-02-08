@@ -153,6 +153,45 @@ namespace Invio.Extensions.Linq {
             return first.Zip(second, Tuple.Create);
         }
 
+        /// <summary>
+        ///   Given an <see cref="IEnumerable{T}" />, this method returns all subsequences
+        ///   of <see cref="IEnumerable{T}" /> that contain elements provided via the
+        ///   <paramref name="source" /> parameter.
+        /// </summary>
+        /// <remarks>
+        ///   The identity and empty subsequences will be included in the resulting list
+        ///   of subsequences for most situations. The lone exception to this is if
+        ///   <paramref name="source" /> is empty - then the empty subsequence will
+        ///   only be returned once.
+        /// </remarks>
+        /// <param name="source">
+        ///   The original sequence of elements that will be mined for potential subsequences.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        ///   Thrown when <paramref name="source" /> is null.
+        /// </exception>
+        /// <returns>
+        ///   All potential combinations of subsequences, including the empty sequence and
+        ///   the identity sequence, from the original <paramref name="source" />.
+        /// </returns>
+        public static IEnumerable<IEnumerable<T>> Subsequences<T>(this IEnumerable<T> source) {
+            if (source == null) {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (!source.Any()) {
+                yield return Enumerable.Empty<T>();
+                yield break;
+            }
+
+            var head = source.Take(1);
+
+            foreach (var tail in source.Skip(1).Subsequences()) {
+                yield return head.Concat(tail);
+                yield return tail;
+            }
+        }
+
     }
 
 }
