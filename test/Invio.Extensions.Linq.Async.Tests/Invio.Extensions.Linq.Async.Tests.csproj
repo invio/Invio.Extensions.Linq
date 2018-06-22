@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <SolutionDir Condition=" '$(SolutionDir)'=='' ">../../</SolutionDir>
+  </PropertyGroup>
+  <Import Condition="Exists('$(SolutionDir)/Common.props')" Project="$(SolutionDir)/Common.props" />
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <DebugType>portable</DebugType>
+    <PackageId>Invio.Extensions.Linq.Async.Tests</PackageId>
+    <AssemblyName>Invio.Extensions.Linq.Async.Tests</AssemblyName>
+    <Description>A library for testing QueryProviders with support for asynchronous query execution.</Description>
+    <Authors>Invio Inc. &lt;developers@invioinc.com&gt;</Authors>
+    <LinqExtensionsPackageVersion Condition=" '$(LinqExtensionsPackageVersion)'=='' ">0.0.0</LinqExtensionsPackageVersion>
+    <VersionPrefix>$(LinqExtensionsPackageVersion)</VersionPrefix>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.2" />
+    <PackageReference Include="xunit" Version="2.3.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+    <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Invio.Extensions.Linq.Async\Invio.Extensions.Linq.Async.csproj" />
+  </ItemGroup>
+</Project>

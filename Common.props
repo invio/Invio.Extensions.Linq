@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <LinqExtensionsPackageVersion>0.1.6</LinqExtensionsPackageVersion>
+  </PropertyGroup>
+</Project>

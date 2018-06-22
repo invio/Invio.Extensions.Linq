@@ -59,5 +59,6 @@ $revision = @{ $true = $env:APPVEYOR_BUILD_NUMBER; $false = 1 }[$env:APPVEYOR_BU
 $revision = "{0:D4}" -f [convert]::ToInt32($revision, 10)
 
 exec { & dotnet test .\test\Invio.Extensions.Linq.Tests\Invio.Extensions.Linq.Tests.csproj -c Release }
+exec { & dotnet test .\test\Invio.Extensions.Linq.Async.Tests\Invio.Extensions.Linq.Async.Tests.csproj -c Release }
 
 exec { & dotnet pack -c Release -o ..\..\artifacts }

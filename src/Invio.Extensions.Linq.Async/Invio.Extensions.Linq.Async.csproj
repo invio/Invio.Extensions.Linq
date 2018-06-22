@@ -7,16 +7,16 @@
     <TargetFramework>netstandard1.3</TargetFramework>
     <DebugType>portable</DebugType>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <AssemblyName>Invio.Extensions.Linq</AssemblyName>
-    <PackageId>Invio.Extensions.Linq</PackageId>
-    <Description>Invio Extensions to System.Linq</Description>
+    <PackageId>Invio.Extensions.Linq.Async</PackageId>
+    <AssemblyName>Invio.Extensions.Linq.Async</AssemblyName>
+    <Description>A library for exposing asynchronous methods on IQueryable for QueryProviders with asynchronous query execution.</Description>
     <Authors>Invio Inc. &lt;developers@invioinc.com&gt;</Authors>
-    <PackageTags>linq;core</PackageTags>
+    <PackageTags>linq;core;async</PackageTags>
     <LinqExtensionsPackageVersion Condition=" '$(LinqExtensionsPackageVersion)'=='' ">0.0.0</LinqExtensionsPackageVersion>
     <VersionPrefix>$(LinqExtensionsPackageVersion)</VersionPrefix>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Collections.Immutable" Version="1.5.0" />
+    <PackageReference Include="Invio.Extensions.Reflection" Version="1.0.9" />
     <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
   </ItemGroup>
 </Project>
