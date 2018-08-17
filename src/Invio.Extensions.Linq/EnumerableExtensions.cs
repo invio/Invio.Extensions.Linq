@@ -198,6 +198,63 @@ namespace Invio.Extensions.Linq {
             }
         }
 
+        /// <summary>
+        ///   Breaks an <see cref="IEnumerable{T}" /> into batches of <paramref name="size" />.
+        /// </summary>
+        /// <remarks>
+        ///   An empty <see cref="IEnumerable{T}" /> will return no batches. If the number
+        ///   of items in the source <see cref="IEnumerable{T}" /> is not perfectly
+        ///   divisible by <paramref name="size" />, the last batch will be smaller
+        ///   than <paramref name="size" />. The order of items in <paramref name="source" />
+        ///   is preserved.
+        /// </remarks>
+        /// <param name="source">
+        ///   The original sequence of elements that will be broken into batches.
+        /// </param>
+        /// <param name="size">
+        ///   The number of items that will be in each set.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        ///   Thrown when <paramref name="source" /> is null.
+        /// </exception>
+        /// <exception cref="ArgumentNullException">
+        ///   Thrown when <paramref name="size" /> is not a positive integer.
+        /// </exception>
+        /// <returns>
+        ///   Zero ot more batches of <see cref="IEnumerable{T}" /> that will each contain
+        ///   up to <paramref name="size" /> items.
+        /// </returns>
+        public static IEnumerable<IEnumerable<T>> Batch<T>(this IEnumerable<T> source, int size) {
+            if (source == null) {
+                throw new ArgumentNullException(nameof(source));
+            } else if (size < 1) {
+                throw new ArgumentOutOfRangeException(
+                    nameof(size),
+                    size,
+                    $"The '{nameof(size)}' must be a positive integer."
+                );
+            }
+
+            var batch = new T[size];
+            var index = 0;
+
+            foreach (var item in source) {
+                batch[index++] = item;
+
+                if (index == size) {
+                    yield return batch;
+
+                    batch = new T[size];
+                    index = 0;
+                }
+            }
+
+            if (index > 0) {
+                Array.Resize(ref batch, index);
+                yield return batch;
+            }
+        }
+
     }
 
 }
