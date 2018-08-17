@@ -384,6 +384,106 @@ namespace Invio.Extensions.Linq {
             Assert.Equal(numberToTake, subsequences.Count());
         }
 
+        [Fact]
+        public void Batch_NullSource() {
+
+            // Arrange
+
+            IEnumerable<int> source = null;
+
+            // Act
+
+            var exception = Record.Exception(
+                () => source.Batch(size: 5).ToList()
+            );
+
+            // Assert
+
+            Assert.IsType<ArgumentNullException>(exception);
+        }
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(0)]
+        public void Batch_InvalidSizes(int invalidSize) {
+
+            // Arrange
+
+            var source = Enumerable.Range(0, 5);
+
+            // Act
+
+            var exception = Record.Exception(
+                () => source.Batch(size: invalidSize).ToList()
+            );
+
+            // Assert
+
+            var typed = Assert.IsType<ArgumentOutOfRangeException>(exception);
+
+            Assert.StartsWith(
+                "The 'size' must be a positive integer." +
+                Environment.NewLine + "Parameter name: size",
+                typed.Message
+            );
+
+            Assert.Equal(invalidSize, typed.ActualValue);
+        }
+
+        [Fact]
+        public void Batch_Empty() {
+
+            // Arrange
+
+            var source = Enumerable.Empty<int>();
+
+            // Act
+
+            var batches = source.Batch(size: 1).ToList();
+
+            // Assert
+
+            Assert.Empty(batches);
+        }
+
+        [Theory]
+        [InlineData(2, 4)]
+        [InlineData(18, 10)]
+        public void Batch_ImperfectDivision(int numberOfItems, int batchSize) {
+
+            // Arrange
+
+            var source = Enumerable.Range(0, numberOfItems);
+
+            // Act
+
+            var batches = source.Batch(batchSize).ToList();
+
+            // Assert
+
+            Assert.Equal(numberOfItems / batchSize + 1, batches.Count);
+            Assert.Equal(numberOfItems % batchSize, batches.Last().Count());
+        }
+
+        [Theory]
+        [InlineData(4, 4)]
+        [InlineData(15, 5)]
+        public void Batch_PerfectDivision(int numberOfItems, int batchSize) {
+
+            // Arrange
+
+            var source = Enumerable.Range(0, numberOfItems);
+
+            // Act
+
+            var batches = source.Batch(batchSize).ToList();
+
+            // Assert
+
+            Assert.Equal(numberOfItems / batchSize, batches.Count);
+            Assert.Equal(batchSize, batches.Last().Count());
+        }
+
         private class SequenceEqualityComparer<T> : IEqualityComparer<IEnumerable<T>> {
 
             public int GetHashCode(IEnumerable<T> sequence) {
