@@ -37,7 +37,7 @@ In the above example, it does not matter how large the `IEnumerable<Guid>` is, i
 
 ### Enumerable Subsequences
 
-There is an extension method on `IEnumerable<T>` that allows allows a caller to get all
+There is an extension method on `IEnumerable<T>` that allows a caller to get all
 potential subsequences of an initial sequence of elements. Named **`Subsequences()`**,
 this method will include all combinations of elements in no particular order, including
 the identity sequence and the empty sequence.
@@ -65,4 +65,21 @@ public static void EnumerateSubsets() {
 [foo, biz]
 [bar, biz]
 [foo, bar, biz]
+```
+
+### Batching
+
+The `IEnumerable<T>.Batch(size)` extension method breaks the enumerable's items into batches of `IEnumerable<T>` where each batch contains `size` items, if possible.
+
+```csharp
+public static void EnumerateBatches() {
+    var values = new List<string> { "foo", "bar", "biz" };
+
+    foreach (var batch in values.Batch(size: 2)) {
+        Console.WriteLine("[" + String.Join(", ") + "]");
+    }
+}
+// Output
+[foo, bar]
+[biz]
 ```
