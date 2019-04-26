@@ -11,6 +11,231 @@ namespace Invio.Extensions.Linq {
     public sealed class EnumerableExtensionsTests {
 
         [Fact]
+        public void FindIndex_NoStartIndex_NullSource() {
+
+            // Arrange
+
+            IEnumerable<string> enumerable = null;
+            Predicate<string> match = item => true;
+
+            // Act
+
+            var exception = Record.Exception(
+                () => enumerable.FindIndex(match)
+            );
+
+            // Assert
+
+            Assert.IsType<ArgumentNullException>(exception);
+        }
+
+        [Fact]
+        public void FindIndex_NoStartIndex_NullMatch() {
+
+            // Arrange
+
+            IEnumerable<string> enumerable = new [] { "foo", "bar", "biz" };
+            Predicate<string> match = null;
+
+            // Act
+
+            var exception = Record.Exception(
+                () => enumerable.FindIndex(match)
+            );
+
+            // Assert
+
+            Assert.IsType<ArgumentNullException>(exception);
+        }
+
+        [Fact]
+        public void FindIndex_NoStartIndex_Empty() {
+
+            // Arrange
+
+            IEnumerable<string> enumerable = new string[0];
+            Predicate<string> match = item => true;
+
+            // Act
+
+            var result = enumerable.FindIndex(match);
+
+            // Assert
+
+            Assert.Equal(-1, result);
+        }
+
+        [Theory]
+        [InlineData("nope")]
+        [InlineData("foo2")]
+        [InlineData("bbar")]
+        [InlineData(null)]
+        [InlineData("but")]
+        public void FindIndex_NoStartIndex_NoMatches(string itemMatch) {
+
+            // Arrange
+
+            IEnumerable<string> enumerable = new [] { "foo", "bar", "biz", "buz", "buk" };
+            Predicate<string> match = item => item == itemMatch;
+
+            // Act
+
+            var result = enumerable.FindIndex(match);
+
+            // Assert
+
+            Assert.Equal(-1, result);
+        }
+
+        [Theory]
+        [InlineData("foo", 0)]
+        [InlineData("bar", 1)]
+        [InlineData("biz", 2)]
+        [InlineData("boo", 4)]
+        public void FindIndex_NoStartIndex_WithMatches(string itemMatch, int expected) {
+
+            // Arrange
+
+            IEnumerable<string> enumerable = new [] { "foo", "bar", "biz", "bar", "boo" };
+            Predicate<string> match = item => item == itemMatch;
+
+            // Act
+
+            var result = enumerable.FindIndex(match);
+
+            // Assert
+
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void FindIndex_WithStartIndex_NullSource() {
+
+            // Arrange
+
+            IEnumerable<string> enumerable = null;
+            Predicate<string> match = item => true;
+
+            // Act
+
+            var exception = Record.Exception(
+                () => enumerable.FindIndex(0, match)
+            );
+
+            // Assert
+
+            Assert.IsType<ArgumentNullException>(exception);
+        }
+
+        [Theory]
+        [InlineData(Int32.MinValue)]
+        [InlineData(-1)]
+        public void FindIndex_WithStartIndex_InvalidStartIndex(int invalidStartIndex) {
+
+            // Arrange
+
+            IEnumerable<string> enumerable = new [] { "foo", "bar", "biz" };
+            Predicate<string> match = item => true;
+
+            // Act
+
+            var exception = Record.Exception(
+                () => enumerable.FindIndex(invalidStartIndex, match)
+            );
+
+            // Assert
+
+            var typed = Assert.IsType<ArgumentOutOfRangeException>(exception);
+            Assert.Equal(invalidStartIndex, typed.ActualValue);
+            Assert.Equal("startIndex", typed.ParamName);
+        }
+
+        [Fact]
+        public void FindIndex_WithStartIndex_NullMatch() {
+
+            // Arrange
+
+            IEnumerable<string> enumerable = new [] { "foo", "bar", "biz" };
+            Predicate<string> match = null;
+
+            // Act
+
+            var exception = Record.Exception(
+                () => enumerable.FindIndex(0, match)
+            );
+
+            // Assert
+
+            Assert.IsType<ArgumentNullException>(exception);
+        }
+
+        [Fact]
+        public void FindIndex_WithStartIndex_Empty() {
+
+            // Arrange
+
+            IEnumerable<string> enumerable = new string[0];
+            Predicate<string> match = item => true;
+
+            // Act
+
+            var result = enumerable.FindIndex(0, match);
+
+            // Assert
+
+            Assert.Equal(-1, result);
+        }
+
+        [Theory]
+        [InlineData(0, "nope")]
+        [InlineData(1, "foo")]
+        [InlineData(10, "foo")]
+        [InlineData(3, "biz")]
+        [InlineData(5, "bar")]
+        public void FindIndex_WithStartIndex_NoMatches(int startIndex, string itemMatch) {
+
+            // Arrange
+
+            IEnumerable<string> enumerable = new [] { "foo", "bar", "biz", "buz", "bar" };
+            Predicate<string> match = item => item == itemMatch;
+
+            // Act
+
+            var result = enumerable.FindIndex(startIndex, match);
+
+            // Assert
+
+            Assert.Equal(-1, result);
+        }
+
+        [Theory]
+        [InlineData(0, "foo", 0)]
+        [InlineData(0, "bar", 1)]
+        [InlineData(1, "bar", 1)]
+        [InlineData(2, "bar", 4)]
+        [InlineData(4, "bar", 4)]
+        [InlineData(2, "biz", 2)]
+        [InlineData(2, "buz", 3)]
+        public void FindIndex_WithStartIndex_WithMatches(
+            int startIndex,
+            string itemMatch,
+            int expected) {
+
+            // Arrange
+
+            IEnumerable<string> enumerable = new [] { "foo", "bar", "biz", "buz", "bar" };
+            Predicate<string> match = item => item == itemMatch;
+
+            // Act
+
+            var result = enumerable.FindIndex(startIndex, match);
+
+            // Assert
+
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
         public void UntypedEnumerable_Cycle_NullSource() {
 
             // Arrange

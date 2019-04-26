@@ -13,6 +13,98 @@ namespace Invio.Extensions.Linq {
     public static class EnumerableExtensions {
 
         /// <summary>
+        ///   Searches for an element that matches the conditions defined by the
+        ///   specified <see cref="Predicate{T}" />, and returns the zero-based index
+        ///   of the first occurrence within the entire <see cref="IEnumerable{T}" />.
+        /// </summary>
+        /// <param name="source">
+        ///   The <see cref="IEnumerable{T}" /> that will be able be searched.
+        /// </param>
+        /// <param name="match">
+        ///   The <see cref="Predicate{T}" /> that defines the conditions
+        ///   of the item in the <see cref="IEnumerable{T}" /> to search for.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        ///   Thrown when <paramref name="source" /> or <paramref name="match" /> is null.
+        /// </exception>
+        /// <returns>
+        ///   The index of the first item first returns <c>true</c> for the
+        ///   provided <paramref name="match" /> provided. If no items
+        ///   return <c>true</c>, a value of <c>-1</c> is returned.
+        /// </returns>
+        public static Int32 FindIndex<T>(this IEnumerable<T> source, Predicate<T> match) {
+            if (source == null) {
+                throw new ArgumentNullException(nameof(source));
+            } else if (match == null) {
+                throw new ArgumentNullException(nameof(match));
+            }
+
+            var result =
+                source
+                    .Select((item, index) => new { Match = match(item), Index = index })
+                    .FirstOrDefault(tuple => tuple.Match);
+
+            return result == null ? -1 : result.Index;
+        }
+
+        /// <summary>
+        ///   Searches for an element that matches the conditions defined by the
+        ///   specified <see cref="Predicate{T}" />, and returns the zero-based index
+        ///   of the first occurrence within the entire <see cref="IEnumerable{T}" />.
+        /// </summary>
+        /// <remarks>
+        ///   This implementation breaks from the traditional <see cref="Array" />
+        ///   approach in that it does not throw a <see cref="ArgumentOutOfRangeException" />
+        ///   if the <paramref name="startIndex" /> is greater than the total size of the
+        ///   <see cref="IEnumerable{T}" />. If <paramref name="source" /> does not contain
+        ///   the number of elements defined in
+        /// </remarks>
+        /// <param name="source">
+        ///   The <see cref="IEnumerable{T}" /> that will be able be searched.
+        /// </param>
+        /// <param name="startIndex">
+        ///   The zero-based starting index of the search. It can be greater than
+        ///   the number of items in the <see cref="IEnumerable{T}" />.
+        /// </param>
+        /// <param name="match">
+        ///   The <see cref="Predicate{T}" /> that defines the conditions
+        ///   of the item in the <see cref="IEnumerable{T}" /> to search for.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        ///   Thrown when <paramref name="source" /> or <paramref name="match" /> is null.
+        /// </exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        ///   Thrown when <paramref name="startIndex" /> is less than zero.
+        /// </exception>
+        /// <returns>
+        ///   The index of the first item first returns <c>true</c> for the
+        ///   provided <paramref name="match" /> provided after the skipping
+        ///   <paramref name="startIndex" /> items in the <paramref name="source" />.
+        ///   If no items return <c>true</c>, a value of <c>-1</c> is returned.
+        /// </returns>
+        public static Int32 FindIndex<T>(this IEnumerable<T> source, int startIndex, Predicate<T> match) {
+            if (source == null) {
+                throw new ArgumentNullException(nameof(source));
+            } else if (startIndex < 0) {
+                throw new ArgumentOutOfRangeException(
+                    nameof(startIndex),
+                    startIndex,
+                    $"The '{nameof(startIndex)}' must be a non-negative integer."
+                );
+            } else if (match == null) {
+                throw new ArgumentNullException(nameof(match));
+            }
+
+            var result =
+                source
+                    .Skip(startIndex)
+                    .Select((item, index) => new { Match = match(item), Index = startIndex + index })
+                    .FirstOrDefault(tuple => tuple.Match);
+
+            return result == null ? -1 : result.Index;
+        }
+
+        /// <summary>
         ///   Similar to <see cref="Enumerable.AsEnumerable" />, this
         ///   method returns an <see cref="IEnumerable{T}" /> that contains
         ///   all of the items in <paramref name="source" />, but instead of
