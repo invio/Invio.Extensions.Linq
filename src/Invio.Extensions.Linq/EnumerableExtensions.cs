@@ -309,7 +309,7 @@ namespace Invio.Extensions.Linq {
         /// <exception cref="ArgumentNullException">
         ///   Thrown when <paramref name="source" /> is null.
         /// </exception>
-        /// <exception cref="ArgumentNullException">
+        /// <exception cref="ArgumentOutOfRangeException">
         ///   Thrown when <paramref name="size" /> is not a positive integer.
         /// </exception>
         /// <returns>
@@ -345,6 +345,49 @@ namespace Invio.Extensions.Linq {
                 Array.Resize(ref batch, index);
                 yield return batch;
             }
+        }
+
+
+        /// <summary>
+        ///   Returns a distinct enumerable of <see cref="IEnumerable{TSource}" /> by using
+        ///   the default comparison on the type <typeparamref name="TKey" />.
+        /// </summary>
+        /// <typeparam name="TSource">
+        ///   The type of the items in <paramref name="source" /> that will be have
+        ///   a key extracted in order to determine a new distinct result of items.
+        /// </typeparam>
+        /// <typeparam name="TKey">
+        ///   A value that can be extracted from an instance of <typeparamref name ="TSource" />
+        ///   that will determine the distinctness of each item in <paramref name="source" />.
+        /// </typeparam>
+        /// <param name="source">
+        ///   The original sequence of elements that need to be filtered for distinct items.
+        /// </param>
+        /// <param name="keySelector">
+        ///   A delegate that will be invoked on each item with <paramref name="source" />,
+        ///   extract a value of type <typeparamref name="TKey" />. If two or more items
+        ///   within <paramref name="source" /> have the same key, only one will be returned.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        ///   Thrown when <paramref name="source" /> or <paramref name="keySelector" />
+        ///   is null.
+        /// </exception>
+        /// <returns>
+        ///   Each of the results that was determined distinct as determined by the values
+        ///   extracted from items in <paramref name="source" /> via key values returned
+        ///   from the <paramref name="keySelector" />.
+        /// </returns>
+        public static IEnumerable<TSource> DistinctBy<TSource, TKey>(
+            this IEnumerable<TSource> source,
+            Func<TSource, TKey> keySelector) {
+
+            if (source == null) {
+                throw new ArgumentNullException(nameof(source));
+            } else if (keySelector == null) {
+                throw new ArgumentNullException(nameof(keySelector));
+            }
+
+            return source.Distinct(new ProjectionEqualityComparer<TSource, TKey>(keySelector));
         }
 
     }
