@@ -709,6 +709,160 @@ namespace Invio.Extensions.Linq {
             Assert.Equal(batchSize, batches.Last().Count());
         }
 
+        [Fact]
+        public void DistinctBy_NullSource() {
+
+            // Arrange
+
+            IEnumerable<int> source = null;
+            Func<int, int> keySelector = item => item;
+
+            // Act
+
+            var exception = Record.Exception(
+                () => source.DistinctBy(keySelector).ToList()
+            );
+
+            // Assert
+
+            Assert.IsType<ArgumentNullException>(exception);
+        }
+
+        [Fact]
+        public void DistinctBy_NullKeySelector() {
+
+            // Arrange
+
+            IEnumerable<int> source = new [] { 1, 4, 6, 8 };
+            Func<int, string> keySelector = null;
+
+            // Act
+
+            var exception = Record.Exception(
+                () => source.DistinctBy(keySelector).ToList()
+            );
+
+            // Assert
+
+            Assert.IsType<ArgumentNullException>(exception);
+        }
+
+        [Fact]
+        public void DistinctBy_DoesNothingOnEmpty() {
+
+            // Arrange
+
+            IEnumerable<string> source = new string[0];
+
+            // Act
+
+            var results = source.DistinctBy(item => item).ToList();
+
+            // Assert
+
+            Assert.Empty(results);
+        }
+
+        [Fact]
+        public void DistinctBy_ConsidersNullItemsDistinctFromNullKeys() {
+
+            // Arrange
+
+            IEnumerable<string> source = new [] { "biz", null, "foo", "bar" };
+            Func<string, string> keySelector = item => item == "foo" ? null : item;
+
+            // Act
+
+            var results = source.DistinctBy(keySelector).ToList();
+
+            // Assert
+
+            Assert.Equal(new [] { "biz", null, "foo", "bar" }, results);
+        }
+
+        [Fact]
+        public void DistinctBy_ConsidersNullItemsEqualKeys() {
+
+            // Arrange
+
+            IEnumerable<string> source = new [] { "biz", null, null, "bar", null };
+            Func<string, string> keySelector = item => item == "foo" ? null : item;
+
+            // Act
+
+            var results = source.DistinctBy(keySelector).ToList();
+
+            // Assert
+
+            Assert.Equal(new [] { "biz", null, "bar" }, results);
+        }
+
+        [Fact]
+        public void DistinctBy_ConsidersNullKeysEqual() {
+
+            // Arrange
+
+            IEnumerable<string> source = new [] { "biz", "FOO", "foo", "FUN", "bar" };
+            Func<string, string> keySelector = item => item[0] == 'F' ? null : item;
+
+            // Act
+
+            var results = source.DistinctBy(keySelector).ToList();
+
+            // Assert
+
+            Assert.Equal(new [] { "biz", "FOO", "foo", "bar" }, results);
+        }
+
+        [Fact]
+        public void DistinctBy_MaintainsOrderWhenNoMatches() {
+
+            // Arrange
+
+            IEnumerable<string> source = new [] { "FOO", "Foo", "FoO" };
+
+            // Act
+
+            var results = source.DistinctBy(item => item).ToList();
+
+            // Assert
+
+            Assert.Equal(source, results);
+        }
+
+        [Fact]
+        public void DistinctBy_MaintainsOrderWithMatches() {
+
+            // Arrange
+
+            IEnumerable<string> source = new [] { "cow", "FOO", "Foo", "moon", "FoO", "bar" };
+
+            // Act
+
+            var results = source.DistinctBy(item => item.ToLower()).ToList();
+
+            // Assert
+
+            Assert.Equal(new [] { "cow", "FOO", "moon", "bar" }, results);
+        }
+
+        [Fact]
+        public void DistinctBy_PreservesOriginalValues() {
+
+            // Arrange
+
+            IEnumerable<string> source = new [] { "FOO", "Foo", "FoO" };
+
+            // Act
+
+            var results = source.DistinctBy(item => item.ToLower()).ToList();
+
+            // Assert
+
+            var result = Assert.Single(results);
+            Assert.Contains(result, source);
+        }
+
         private class SequenceEqualityComparer<T> : IEqualityComparer<IEnumerable<T>> {
 
             public int GetHashCode(IEnumerable<T> sequence) {
