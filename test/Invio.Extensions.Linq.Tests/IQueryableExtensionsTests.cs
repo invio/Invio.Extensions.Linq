@@ -21,7 +21,7 @@ namespace Invio.Extensions.Linq {
         [InlineData(0)]
         [InlineData(-1)]
         [InlineData(Int32.MinValue)]
-        public void GetPage_PagetNumberOutOfRange(Int32 pageNumber) {
+        public void GetPage_PageNumberOutOfRange(Int32 pageNumber) {
             Assert.Throws<ArgumentOutOfRangeException>(
                 () => new Int32[0].AsQueryable().GetPage(pageNumber, 1)
             );

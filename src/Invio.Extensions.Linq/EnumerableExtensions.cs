@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace Invio.Extensions.Linq {
@@ -347,7 +348,6 @@ namespace Invio.Extensions.Linq {
             }
         }
 
-
         /// <summary>
         ///   Returns a distinct enumerable of <see cref="IEnumerable{TSource}" /> by using
         ///   the default comparison on the type <typeparamref name="TKey" />.
@@ -388,6 +388,52 @@ namespace Invio.Extensions.Linq {
             }
 
             return source.Distinct(new ProjectionEqualityComparer<TSource, TKey>(keySelector));
+        }
+
+        /// <summary>
+        /// Partition an <see cref="IEnumerable{T}" /> source in to a Tuple of
+        /// two <see cref="IReadOnlyCollection{T}" /> lists:
+        /// <code>(matching, non-matching)</code>.
+        /// </summary>
+        /// <remarks>
+        /// This method enumerates the source only once, but it fully
+        /// enumerates it and buffers the items. Not for use on infinite
+        /// sequences.
+        /// </remarks>
+        /// <param name="source">The source of items to partition.</param>
+        /// <param name="condition">The predicate on which to partition.</param>
+        /// <typeparam name="T">The type of the item being partitioned.</typeparam>
+        /// <returns>
+        /// A tuple containing the list of items for which the
+        /// <paramref name="condition" /> returned true, and the list of items
+        /// for which the <paramref name="condition" /> returned false.
+        /// </returns>
+        public static Tuple<IReadOnlyCollection<T>, IReadOnlyCollection<T>> ToPartitions<T>(
+            this IEnumerable<T> source,
+            Predicate<T> condition) {
+
+            if (source == null) {
+                throw new ArgumentNullException(nameof(source));
+            }
+            if (condition == null) {
+                throw new ArgumentNullException(nameof(condition));
+            }
+
+            var trueItems = ImmutableList.CreateBuilder<T>();
+            var falseItems = ImmutableList.CreateBuilder<T>();
+
+            foreach (var item in source) {
+                if (condition(item)) {
+                    trueItems.Add(item);
+                } else {
+                    falseItems.Add(item);
+                }
+            }
+
+            return Tuple.Create<IReadOnlyCollection<T>, IReadOnlyCollection<T>>(
+                trueItems.ToImmutable(),
+                falseItems.ToImmutable()
+            );
         }
 
     }

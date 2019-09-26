@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace Invio.Extensions.Linq {
     /// <summary>
@@ -8,7 +10,7 @@ namespace Invio.Extensions.Linq {
     /// </summary>
     public static class IQueryableExtensions {
         /// <summary>
-        /// Retreive a single page of results from a larger result set,
+        /// Retrieve a single page of results from a larger result set,
         /// including the total number of results and the offset of the page.
         /// </summary>
         /// <remarks>
@@ -20,7 +22,7 @@ namespace Invio.Extensions.Linq {
         /// The page number to retrieve starting at 1.
         /// </param>
         /// <param name="pageSize">
-        /// The number of results to retreive per page. (Minimum: 1).
+        /// The number of results to retrieve per page. (Minimum: 1).
         /// </param>
         /// <typeparam name="T">The type of result items.</typeparam>
         /// <returns>

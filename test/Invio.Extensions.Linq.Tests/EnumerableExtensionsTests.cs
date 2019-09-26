@@ -863,6 +863,18 @@ namespace Invio.Extensions.Linq {
             Assert.Contains(result, source);
         }
 
+        [Theory]
+        [InlineData(new Int32[0], new Int32[0], new Int32[0])]
+        [InlineData(new[] { 2, 4, 6 }, new[] { 2, 4, 6 }, new Int32[0])]
+        [InlineData(new[] { 3, 5, 7 }, new Int32[0], new[] { 3, 5, 7 })]
+        [InlineData(new[] { 3, 2, 5, 4, 6, 7 }, new[] { 2, 4, 6 }, new[] { 3, 5, 7 })]
+        public void ToPartitions(Int32[] input, Int32[] even, Int32[] odd) {
+            var (truePart, falsePart) = input.ToPartitions(i => i % 2 == 0);
+
+            Assert.Equal(even, truePart);
+            Assert.Equal(odd, falsePart);
+        }
+
         private class SequenceEqualityComparer<T> : IEqualityComparer<IEnumerable<T>> {
 
             public int GetHashCode(IEnumerable<T> sequence) {
