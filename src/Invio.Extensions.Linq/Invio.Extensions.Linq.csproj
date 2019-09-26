@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyTitle>Invio Extensions to System.Linq</AssemblyTitle>
-    <VersionPrefix>0.3.0</VersionPrefix>
+    <VersionPrefix>0.4.0</VersionPrefix>
     <Authors>Invio Inc. &lt;developers@invioinc.com&gt;</Authors>
     <TargetFramework>netstandard1.3</TargetFramework>
     <DebugType>portable</DebugType>
