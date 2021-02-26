@@ -412,7 +412,7 @@ namespace Invio.Extensions.Linq {
         }
 
         [Fact]
-        public void Zip_FirstSequenceNull() {
+        public void ZipToTuple_FirstSequenceNull() {
 
             // Arrange
 
@@ -422,7 +422,7 @@ namespace Invio.Extensions.Linq {
             // Act
 
             var exception = Record.Exception(
-                () => first.Zip(second).ToList()
+                () => first.ZipToTuple(second).ToList()
             );
 
             // Assert
@@ -431,7 +431,7 @@ namespace Invio.Extensions.Linq {
         }
 
         [Fact]
-        public void Zip_SecondSequenceNull() {
+        public void ZipToTuple_SecondSequenceNull() {
 
             // Arrange
 
@@ -441,7 +441,7 @@ namespace Invio.Extensions.Linq {
             // Act
 
             var exception = Record.Exception(
-                () => first.Zip(second).ToList()
+                () => first.ZipToTuple(second).ToList()
             );
 
             // Assert
@@ -450,7 +450,7 @@ namespace Invio.Extensions.Linq {
         }
 
         [Fact]
-        public void Zip_CombinesVaryingLengths() {
+        public void ZipToTuple_CombinesVaryingLengths() {
 
             // Arrange
 
@@ -459,7 +459,7 @@ namespace Invio.Extensions.Linq {
 
             // Act
 
-            var zipped = first.Zip(second).ToList();
+            var zipped = first.ZipToTuple(second).ToList();
 
             Assert.Equal(
                 new List<Tuple<int, string>> {

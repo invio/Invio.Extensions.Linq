@@ -111,6 +111,39 @@ namespace Invio.Extensions.Linq {
             Assert.Equal(1, source.NumberOfCounts);
         }
 
+        [Fact]
+        public void LeftOuterJoin() {
+            var parents = new[] {
+                new Parent { Name = "Foo" },
+                new Parent { Name = "Loner" },
+                new Parent { Name = "Fizz" }
+            };
+            var children = new[] {
+                new Child { ParentId = parents[0].Id, Name = "Bar" },
+                new Child { ParentId = parents[0].Id, Name = "Baz" },
+                new Child { ParentId = parents[2].Id, Name = "Buzz" }
+            };
+
+            var parentsQuery = parents.AsQueryable();
+            var childrenQuery = children.AsQueryable();
+
+            var result =
+                parentsQuery
+                    .Where(p => p.Name != "Fizz")
+                    .LeftOuterJoin(
+                        childrenQuery,
+                        p => p.Id,
+                        c => c.ParentId,
+                        row => new { Parent = row.Item1, Child = row.Item2 })
+                    .ToList();
+
+            Assert.Equal(3, result.Count);
+            Assert.Equal(2, result.Count(r => r.Parent.Name == "Foo"));
+            Assert.Single(result.Where(r => r.Parent.Name == "Loner"));
+            Assert.Null(result.Single(r => r.Parent.Name == "Loner").Child);
+            Assert.True(result.Where(r => r.Parent.Name == "Foo").All(r => r.Child != null));
+        }
+
         private static void GetPageAndCheckQueryCounts(
             Int32 total,
             Int32 pageNumber,
@@ -263,6 +296,16 @@ namespace Invio.Extensions.Linq {
             IEnumerator IEnumerable.GetEnumerator() {
                 return GetEnumerator();
             }
+        }
+
+        private class Parent {
+            public Guid Id { get; set; } = Guid.NewGuid();
+            public String Name { get; set; }
+        }
+
+        private class Child {
+            public Guid ParentId { get; set; }
+            public String Name { get; set; }
         }
     }
 }

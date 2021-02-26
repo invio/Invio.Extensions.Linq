@@ -239,7 +239,7 @@ namespace Invio.Extensions.Linq {
         ///   An final enumerable that combines the corresponding elements
         ///   of the two input sequences into a sequence of tuples.
         /// </returns>
-        public static IEnumerable<Tuple<TFirst, TSecond>> Zip<TFirst, TSecond>(
+        public static IEnumerable<Tuple<TFirst, TSecond>> ZipToTuple<TFirst, TSecond>(
             this IEnumerable<TFirst> first,
             IEnumerable<TSecond> second) {
 

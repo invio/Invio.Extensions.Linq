@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Linq.Expressions;
@@ -85,6 +84,51 @@ namespace Invio.Extensions.Linq {
                 offset,
                 total
             );
+        }
+
+        /// <summary>
+        /// Performs a Left Join by using a combination of GroupJoin, SelectMany, and DefaultIfEmpty.
+        /// </summary>
+        /// <param name="source">
+        /// The Left query source (a table or subquery expression).
+        /// </param>
+        /// <param name="related">
+        /// The Right query source (a table or subquery expression).
+        /// </param>
+        /// <param name="sourceKeySelector">
+        /// An expression that selects the key to match on from the left source.
+        /// </param>
+        /// <param name="relatedKeySelector">
+        /// An expression that selects the key to match on from the related (right) source.
+        /// </param>
+        /// <param name="resultSelector">
+        /// An expression that creates the result type from the <c>Tuple&lt;TSource, TRelated></c>.
+        /// </param>
+        /// <typeparam name="TSource">The type contained by the source query.</typeparam>
+        /// <typeparam name="TRelated">The type contained by the related query.</typeparam>
+        /// <typeparam name="TKey">The type of the key being matched on.</typeparam>
+        /// <typeparam name="TResult">The type of the result.</typeparam>
+        /// <returns>
+        /// A queryable of <typeparamref name="TResult" /> containing entries for each source item
+        /// and any related items that matched it. A result for source items with no related items
+        /// will also be included.
+        /// </returns>
+        public static IQueryable<TResult> LeftOuterJoin<TSource, TRelated, TKey, TResult>(
+            this IQueryable<TSource> source,
+            IQueryable<TRelated> related,
+            Expression<Func<TSource, TKey>> sourceKeySelector,
+            Expression<Func<TRelated, TKey>> relatedKeySelector,
+            Expression<Func<Tuple<TSource, TRelated>, TResult>> resultSelector) {
+
+            return source.GroupJoin(
+                    related,
+                    sourceKeySelector,
+                    relatedKeySelector,
+                    (s, rs) => new { Source = s, RelatedList = rs })
+                .SelectMany(
+                    r => r.RelatedList.DefaultIfEmpty(),
+                    (row, r) => new Tuple<TSource, TRelated>(row.Source, r))
+                .Select(resultSelector);
         }
     }
 }
