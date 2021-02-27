@@ -120,7 +120,7 @@ namespace Invio.Extensions.Linq.Generative {
             var param = Expression.Parameter(typeof(T));
 
             return Expression.Lambda<Func<T, Boolean>>(
-                Expression.Or(
+                Expression.OrElse(
                     ParamReplacingVisitor.Replace(expr1.Body, p1, param),
                     ParamReplacingVisitor.Replace(expr2.Body, p2, param)),
                 param
