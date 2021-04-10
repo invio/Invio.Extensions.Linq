@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Invio.Extensions.Linq {
     /// <summary>
@@ -36,12 +38,14 @@ namespace Invio.Extensions.Linq {
             if (source == null) {
                 throw new NullReferenceException(nameof(source));
             }
+
             if (pageNumber < 1) {
                 throw new ArgumentOutOfRangeException(
                     nameof(pageNumber),
                     pageNumber,
                     "pageNumber must be greater than or equal to 1.");
             }
+
             if (pageSize < 0) {
                 throw new ArgumentOutOfRangeException(
                     nameof(pageSize),
@@ -76,8 +80,8 @@ namespace Invio.Extensions.Linq {
             var total =
                 isPartialLastPage ?
                     // infer the total from the offset + final page size
-                    offset + results.Count
-                    : source.Count();
+                    offset + results.Count :
+                    source.Count();
 
             return new PaginatedResult<T>(
                 results,
@@ -118,17 +122,86 @@ namespace Invio.Extensions.Linq {
             IQueryable<TRelated> related,
             Expression<Func<TSource, TKey>> sourceKeySelector,
             Expression<Func<TRelated, TKey>> relatedKeySelector,
-            Expression<Func<Tuple<TSource, TRelated>, TResult>> resultSelector) {
+            Expression<Func<TSource, TRelated, TResult>> resultSelector) {
 
-            return source.GroupJoin(
-                    related,
-                    sourceKeySelector,
-                    relatedKeySelector,
-                    (s, rs) => new { Source = s, RelatedList = rs })
-                .SelectMany(
-                    r => r.RelatedList.DefaultIfEmpty(),
-                    (row, r) => new Tuple<TSource, TRelated>(row.Source, r))
-                .Select(resultSelector);
+            var join = source.GroupJoin(
+                related,
+                sourceKeySelector,
+                relatedKeySelector,
+                (s, rs) => new { Source = s, RelatedItems = rs }
+            );
+
+            // Convert the two parameter (TSource p1, TRelated p2) lambda result selector into a
+            // lambda that takes
+            // ({TSource Source, IEnumerable<TRelated> RelatedList} p1prime, TRelated p2prime).
+            // References to p1 are replaced with references to p1prime.Source, and references to
+            // p2 are replaced with p2prime. This is necessary because the maintainers of
+            // EntityFrameworkCore are huge knuckleheads.
+            var p1Prime = Expression.Parameter(join.ElementType);
+            var p2Prime = Expression.Parameter(typeof(TRelated));
+            var sourceMember = join.ElementType.GetRuntimeProperty("Source");
+            var relatedMember = join.ElementType.GetRuntimeProperty("RelatedItems");
+            var sourceReference = Expression.MakeMemberAccess(p1Prime, sourceMember);
+            var visitor = new ParameterReplacingExpressionVisitor(new Dictionary<ParameterExpression, Expression> {
+                { resultSelector.Parameters[0], sourceReference },
+                { resultSelector.Parameters[1], p2Prime }
+            });
+
+            var delegateType = typeof(Func<,,>).MakeGenericType(join.ElementType, typeof(TRelated), typeof(TResult));
+            var lambda = Expression.Lambda(
+                delegateType,
+                visitor.Visit(resultSelector.Body) ??
+                    throw new InvalidOperationException($"The {nameof(ParameterReplacingExpressionVisitor)} did not return an expression for the body of the result selector"),
+                p1Prime,
+                p2Prime
+            );
+
+            var rowParameter = Expression.Parameter(join.ElementType);
+            var collectionSelector = Expression.Lambda(
+                typeof(Func<,>).MakeGenericType(join.ElementType, typeof(IEnumerable<TRelated>)),
+                Expression.Call(
+                    null,
+                    DefaultIfEmptyMethod.MakeGenericMethod(typeof(TRelated)),
+                    Expression.MakeMemberAccess(rowParameter, relatedMember)
+                ),
+                rowParameter
+            );
+
+            var selectMany = SelectManyMethod.MakeGenericMethod(join.ElementType, typeof(TRelated), typeof(TResult));
+            return (IQueryable<TResult>)selectMany.Invoke(null, new Object[] {
+                join,
+                collectionSelector,
+                lambda
+            });
+        }
+
+        private static readonly MethodInfo SelectManyMethod =
+            ((MethodCallExpression)
+                new Object[0].Select(_ => new { Foos = new Int32[0] })
+                    .AsQueryable()
+                    .SelectMany(item => item.Foos, (item, foo) => foo)
+                    .Expression).Method.GetGenericMethodDefinition();
+
+        private static readonly MethodInfo DefaultIfEmptyMethod =
+            new Func<IEnumerable<Object>, IEnumerable<Object>>(Enumerable.DefaultIfEmpty).GetMethodInfo().GetGenericMethodDefinition();
+
+        private class ParameterReplacingExpressionVisitor : ExpressionVisitor {
+            private readonly IDictionary<ParameterExpression, Expression> parameterMapping;
+
+            public ParameterReplacingExpressionVisitor(
+                IDictionary<ParameterExpression, Expression> parameterMapping) {
+
+                this.parameterMapping = parameterMapping;
+            }
+
+            protected override Expression VisitParameter(ParameterExpression node) {
+                if (this.parameterMapping.TryGetValue(node, out var replacement)) {
+                    return replacement;
+                } else {
+                    // Maybe there are nested lambdas in the expression tree.
+                    return node;
+                }
+            }
         }
     }
 }

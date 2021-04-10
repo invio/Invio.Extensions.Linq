@@ -134,7 +134,7 @@ namespace Invio.Extensions.Linq {
                         childrenQuery,
                         p => p.Id,
                         c => c.ParentId,
-                        row => new { Parent = row.Item1, Child = row.Item2 })
+                        (row, related) => new { Parent = row, Child = related })
                     .ToList();
 
             Assert.Equal(3, result.Count);
